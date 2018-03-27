@@ -597,3 +597,4 @@ void Primitive::DrawSkybox()
     glBindVertexArray(0);
     glDepthMask(GL_TRUE);
 }
+

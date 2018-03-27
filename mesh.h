@@ -27,7 +27,7 @@ public:
     static void DrawSkybox();
 
 private:
-    static bool sInit; static Primitive sphere;
+	static bool sInit; static Primitive sphere;
     static bool bInit; static Primitive box;
     static bool qInit; static Primitive quad;
     static bool xInit; static Primitive skybox;
