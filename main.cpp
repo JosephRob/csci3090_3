@@ -21,6 +21,7 @@
 // Custom headers
 #include "shaders.h"
 #include "mesh.h"
+
 #include "Camera.h"
 
 using namespace glm;
@@ -59,7 +60,7 @@ bool bright = false;
 int rockLock = 0;
 
 // Camera
-Camera  camera(glm::vec3(0.0f, 50.0f, 30.0f));
+Camera  camera(vec3(0.0f, 0.0f, -50.0f),vec3(0,1,0),90,0);
 
 enum
 {
@@ -256,7 +257,7 @@ void Initialize()
 
 void Update(float deltaTime)
 {
-    mat4 identity, translation, scaling, rotation;
+	mat4 identity, translation, scaling, rotation;
     identity = mat4(1.0f);
     const float pi2 = 2.0f * pi<float>();
 
@@ -334,9 +335,9 @@ void Update(float deltaTime)
 	scaling = scale(identity, vec3(radius[SATURN]));
 	rotation = rotate(identity, saturnRotate, vec3(0, 1, 0));
 	modelMatrix[SATURN] = translation * rotation * scaling;
-	scaling = scale(identity, vec3(2*radius[SATURN],2*radius[SATURN],0.01));
+	scaling = scale(identity, vec3(2*radius[SATURN],2*radius[SATURN],0.0));
 	rotation = rotate(identity, 1.57f, vec3(1, 0, 0));
-	satRing = translation*rotation*scaling;
+	satRing = translation * rotation*scaling*rotate(identity, saturnRotate*0.002134f, vec3(0, 0, 1));
 
 	translation = translate(identity, uranusPosition);
 	scaling = scale(identity, vec3(radius[URANUS]));
@@ -347,8 +348,9 @@ void Update(float deltaTime)
 	scaling = scale(identity, vec3(radius[NEPTUNE]));
 	rotation = rotate(identity, neptuneRotate, vec3(0, 1, 0));
 	modelMatrix[NEPTUNE] = translation * rotation * scaling;
-	scaling = scale(identity, vec3(2 * radius[NEPTUNE], 2 * radius[NEPTUNE], 0.01));
-	nepRing = translation * scaling;
+	scaling = scale(identity, vec3(2 * radius[NEPTUNE], 2 * radius[NEPTUNE], 0.0));
+	rotation = rotate(identity, neptuneRotate/1000, vec3(0, 0, 1));
+	nepRing = translation * rotation * scaling;
 
     scaling = scale(identity, vec3(radius[SUN]));
 	rotation = rotate(identity, -sunRotate, vec3(0, 1, 0));
@@ -449,8 +451,9 @@ void Update(float deltaTime)
     {*/   // Look from the moon, at the earth
 	
 	//vec3 pos = dist * 5.0f * normalize(vec3(0,10,3));//dist * normalize(vec3(cos(A1), sin(A2), sin(A1))) * 5.0f;
-	viewMatrix = /*camera.GetViewMatrix();*/inverse(lookAt(camera.GetPosition(), vec3(0), vec3(0, 1, 0)));
+	viewMatrix = camera.GetViewMatrix();//inverse(lookAt(camera.GetPosition(), vec3(0), vec3(0, 1, 0)));
 	cameraPosition = camera.GetPosition();
+	
 /*	for (int x = 0;x < 4;x++) {
 		for (int y = 0;y < 4;y++) {
 			printf("%f ",viewMatrix[x][y]);
@@ -740,6 +743,7 @@ void Render()
 
 		Primitive::DrawSphere();
 
+		glUniform1i(glGetUniformLocation(phongProgram, "bright"), 1);
 		glUniform1i(dtLoc, 0);                                              // <- 1) Get the uniform location for the 2D sampler, and set it to index zero                       
 		glActiveTexture(GL_TEXTURE0);                                       // <- 2) Set the active texture to also be index zero, matching above                             
 		glBindTexture(GL_TEXTURE_2D, saturnRingTexture);                       // <- 3) Bind the diffuse texture (bound to index 0)
@@ -748,8 +752,11 @@ void Render()
 		glUniformMatrix4fv(pLoc, 1, GL_FALSE, &projectionMatrix[0][0]);     // <- Pass through the projection matrix here to the vertex shader
 		glUniformMatrix4fv(nLoc, 1, GL_FALSE,                               // <- Pass through the transpose of the inverse of the model matrix
 			&transpose(inverse(satRing))[0][0]);
-
+		
 		Primitive::DrawBox();
+
+		glUniform1i(glGetUniformLocation(phongProgram, "bright"), bright);
+
 
 		// Unbinding textures
 		glActiveTexture(GL_TEXTURE1);
@@ -806,6 +813,8 @@ void Render()
 		glUniform3fv(cLoc, 1, &cameraPosition[0]);                          // <- Pass through the camera location to the shader
 
 		Primitive::DrawSphere();
+
+		glUniform1i(glGetUniformLocation(phongProgram, "bright"), 1);
 		glUniform1i(dtLoc, 0);                                              // <- 1) Get the uniform location for the 2D sampler, and set it to index zero                       
 		glActiveTexture(GL_TEXTURE0);                                       // <- 2) Set the active texture to also be index zero, matching above                             
 		glBindTexture(GL_TEXTURE_2D, neptuneRingTexture);                       // <- 3) Bind the diffuse texture (bound to index 0)
@@ -818,6 +827,7 @@ void Render()
 			&transpose(inverse(nepRing))[0][0]);
 
 		Primitive::DrawBox();
+		glUniform1i(glGetUniformLocation(phongProgram, "bright"), bright);
 
 		// Unbinding textures
 		glActiveTexture(GL_TEXTURE1);
@@ -994,6 +1004,9 @@ int main()
         
         // Call the helper functions
         Update(deltaTime);
+		//camera.pitch += 1;
+		//camera.yaw += 1;
+		//camera.position[2] -= 1;
         Render();
         GUI();
 

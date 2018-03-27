@@ -20,8 +20,8 @@ enum Camera_Movement
 };
 
 // Default camera values
-const GLfloat YAW        = -90.0f;
-const GLfloat PITCH      =  0.0f;
+const GLfloat YAW        = 0.0f;
+const GLfloat PITCH      =  -90.0f;
 const GLfloat SPEED      =  6.0f;
 const GLfloat SENSITIVTY =  0.25f;
 const GLfloat ZOOM       =  45.0f;
@@ -31,7 +31,8 @@ class Camera
 {
 public:
     // Constructor with vectors
-    Camera( glm::vec3 position = glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3 up = glm::vec3( 0.0f, 1.0f, 0.0f ), GLfloat yaw = YAW, GLfloat pitch = PITCH ) : front( glm::vec3( 0.0f, 0.0f, -1.0f ) ), movementSpeed( SPEED ), mouseSensitivity( SENSITIVTY ), zoom( ZOOM )
+    Camera( glm::vec3 position, glm::vec3 up = glm::vec3( 0.0f,0.0f, 1.0f ), GLfloat yaw = YAW, GLfloat pitch = PITCH ) 
+		: front( glm::vec3( 0.0f, 0.0f, -1.0f ) ), movementSpeed( SPEED ), mouseSensitivity( SENSITIVTY ), zoom( ZOOM )
     {
         this->position = position;
         this->worldUp = up;
@@ -59,6 +60,7 @@ public:
     // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard( Camera_Movement direction, GLfloat deltaTime )
     {
+		
         GLfloat velocity = this->movementSpeed * deltaTime;
         
         if ( direction == FORWARD )
@@ -125,7 +127,7 @@ public:
         return this->position;
     }
     
-private:
+public:
     // Camera Attributes
     glm::vec3 position;
     glm::vec3 front;
