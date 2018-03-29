@@ -60,7 +60,7 @@ bool bright = false;
 int rockLock = 0;
 
 // Camera
-Camera  camera(vec3(0.0f, 0.0f, -50.0f),vec3(0,1,0),90,0);
+Camera  camera(vec3(0.0f, 0.0f, -50.0f),vec3(0,1,0),90,-80);
 
 enum
 {
@@ -257,6 +257,7 @@ void Initialize()
 
 void Update(float deltaTime)
 {
+
 	mat4 identity, translation, scaling, rotation;
     identity = mat4(1.0f);
     const float pi2 = 2.0f * pi<float>();
@@ -469,15 +470,32 @@ void Update(float deltaTime)
 
 	//spawn rock
 	if (GetAsyncKeyState('P') & 0x8000 && (rockLock!=time(0) || many)) {
-		double a1=rand()*10000.0f, a2=rand()*10000.0f;
+		double a1 = rand(), a2 = rand();
+
 		rockLock = time(0);
-		vec3 pos= dist * normalize(vec3(cos(a1), sin(a2), sin(a1))) * 2.0f;
+		vec3 pos = dist * normalize(vec3(cos(a1)*cos(a2), sin(a2), sin(a1)*cos(a2))) * 2.0f;
 		rocksP.push_back(pos);
-		rocksV.push_back(vec3(rand()%10-5,rand()%10-5,rand()%10-5)*0.1f);
+		rocksV.push_back(vec3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5)*0.1f);
 		rocks.push_back(mat4(0.0));
-		std::cout << "create rock " << rocksP.size() << " at ("<<cos(a1) << ", " << sin(a2) << ", " << sin(a1) << ")" << std::endl;
+		std::cout << "create rock " << rocksP.size() << " at (" << cos(a1)*cos(a2) << ", " << sin(a2) << ", " << sin(a1)*cos(a2) << ")" << std::endl;
+	}
+	//i am for test dont keep me
+	if (GetAsyncKeyState('G') & 0x8000) {
+		for (int ASDF = 0;ASDF < 10000;ASDF++) {
+			double a1 = rand(), a2 = rand();
+
+			rockLock = time(0);
+			vec3 pos = dist * normalize(vec3(cos(a1)*cos(a2), sin(a2), sin(a1)*cos(a2))) * 2.0f;
+			rocksP.push_back(pos);
+			rocksV.push_back(vec3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5)*0.1f);
+			rocks.push_back(mat4(0.0));
+			std::cout << "create rock " << rocksP.size() << " at (" << cos(a1)*cos(a2) << ", " << sin(a2) << ", " << sin(a1)*cos(a2) << ")" << std::endl;
+		}
 	}
 	//controls FIX ME LATER I NEED TO USE MOUSE AND FREE MOVMENT
+	if (deltaTime == 0){
+		deltaTime = 0.04;
+	}
 	if (GetAsyncKeyState('D') & 0x8000) {
 		std::cout << "right" << std::endl;
 		camera.ProcessKeyboard(RIGHT, deltaTime);
@@ -487,13 +505,22 @@ void Update(float deltaTime)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	}
 	if (GetAsyncKeyState('W') & 0x8000) {
-		std::cout << "up" << std::endl;
+		std::cout << "front" << std::endl;
 		camera.ProcessKeyboard(FORWARD, deltaTime);
 	}
 	if (GetAsyncKeyState('S') & 0x8000) {
-		std::cout << "down" << std::endl;
+		std::cout << "back" << std::endl;
 		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	}/*
+	}
+	if (GetAsyncKeyState('R') & 0x8000) {
+		std::cout << "up" << std::endl;
+		camera.position -= camera.worldUp*camera.movementSpeed*deltaTime;
+	}
+	if (GetAsyncKeyState('F') & 0x8000) {
+		std::cout << "down" << std::endl;
+		camera.position += camera.worldUp*camera.movementSpeed*deltaTime;
+	}
+	/*
 	if (GetAsyncKeyState('O') & 0x8000) {
 		std::cout << "out" << std::endl;
 		dist -= 0.1;
@@ -1004,10 +1031,12 @@ int main()
         
         // Call the helper functions
         Update(deltaTime);
-		//camera.pitch += 1;
+		//camera.pitch += 0.1;
 		//camera.yaw += 1;
 		//camera.position[2] -= 1;
-        Render();
+		//camera.position+=camera.worldUp*0.005f;
+		camera.updateCameraVectors();
+		Render();
         GUI();
 
         // Finish by drawing the GUI

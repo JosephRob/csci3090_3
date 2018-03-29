@@ -65,12 +65,12 @@ public:
         
         if ( direction == FORWARD )
         {
-            this->position += this->front * velocity;
+            this->position += glm::cross(this->right,this->front) * velocity;
         }
         
         if ( direction == BACKWARD )
         {
-            this->position -= this->front * velocity;
+            this->position -= glm::cross(this->right, this->front) * velocity;
         }
         
         if ( direction == LEFT )
@@ -82,6 +82,7 @@ public:
         {
             this->position += this->right * velocity;
         }
+		this->updateCameraVectors();
     }
     
     // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.

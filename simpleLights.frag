@@ -28,18 +28,20 @@ void main()
 	vec4 diffuseTexture = texture(diffuseTex, inData.texcoord);
 
 	// Do diffuse light
-	vec3 diffuse = diffuseTexture.rgb * vec3(NoL) * luminance*diffuseTexture.a;
+	vec3 diffuse = diffuseTexture.rgb * vec3(NoL) * luminance;
 	
-	vec3 specularColor = texture(specularTex, inData.texcoord).rgb;
+
+	vec4 specularColor = texture(specularTex, inData.texcoord);
 
 	// Do specular light
 	vec3 R = normalize(reflect(-light, normal));
 	float VoR = max(0.0f, dot(-V, R));
-	vec3 specular = specularColor * pow(VoR, specularColor.r * specularPower) * (NoL > 0.0 ? 1.0 : 0.0);
+	VoR=dot(-V,R);
+	vec3 specular = specularColor.rgb * diffuseTexture.a * pow(VoR, specularColor.r * specularPower) * (NoL > 0.0 ? 1.0 : 0.0);
 
-	frag_colour.rgb = vec3(0.05) * diffuseTexture.rgb*diffuseTexture.a + diffuse + specular;
+	frag_colour.rgb = vec3(0.05) * diffuseTexture.rgb*diffuseTexture.a + diffuse;// + specular;
 	if (bright){
 		frag_colour.rgb = diffuseTexture.rgb;
 	}
-	frag_colour.a = 1.0f;
+	frag_colour.a = diffuseTexture.a;
 }
